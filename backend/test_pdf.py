@@ -7,7 +7,10 @@ pages = extract_text_from_pdf(
 )
 
 
-chunks = create_chunks(pages)
+chunks = create_chunks(
+    pages,
+    source="test.pdf"
+    )
 
 
 print("Number of chunks:", len(chunks))

@@ -5,7 +5,16 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY") or os.getenv("OPENAI_API_KEY")
+OPENROUTER_API_BASE_URL = os.getenv("OPENROUTER_API_BASE_URL", "https://api.openrouter.ai/v1")
+
+if OPENROUTER_API_KEY is None:
+    raise ValueError("OPENROUTER_API_KEY or OPENAI_API_KEY must be set")
+
+client = OpenAI(
+    api_key=OPENROUTER_API_KEY,
+    base_url=OPENROUTER_API_BASE_URL
+)
 
 chroma_client = chromadb.PersistentClient(
     path="./chroma_db"
