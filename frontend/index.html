@@ -1,47 +1,213 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>RAG Chatbot</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <link rel="stylesheet" href="style.css">
+    <title>
+        RAG Chatbot
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
 </head>
+
 
 <body>
 
-    <div class="chat-container">
-
-        <div class="header">
-            <h1>RAG Chatbot</h1>
-            <p>Ask questions about the knowledge base.</p>
-        </div>
+    <div class="app">
 
 
-        <div id="messages" class="messages">
+        <!-- ================================================= -->
+        <!-- HEADER -->
+        <!-- ================================================= -->
 
-            <div class="message bot">
-                Hello! Ask me something about the documents.
+        <header class="header">
+
+            <div>
+
+                <h1>
+                    🤖 RAG Chatbot
+                </h1>
+
+                <p>
+                    Chat with your documents
+                </p>
+
             </div>
 
-        </div>
+            <div
+                id="connectionStatus"
+                class="status"
+            >
+                ● Connected
+            </div>
+
+        </header>
 
 
-        <div class="input-area">
+        <!-- ================================================= -->
+        <!-- MAIN CONTENT -->
+        <!-- ================================================= -->
 
-            <input
-                id="question"
-                type="text"
-                placeholder="Ask a question..."
-            />
+        <main class="main">
 
-            <button id="sendButton">
-                Send
-            </button>
 
-        </div>
+            <!-- ============================================= -->
+            <!-- SIDEBAR -->
+            <!-- ============================================= -->
+
+            <aside class="sidebar">
+
+
+                <div class="sidebar-header">
+
+                    <h2>
+                        📚 Documents
+                    </h2>
+
+                    <button
+                        id="uploadButton"
+                        class="upload-button"
+                    >
+                        + Upload PDF
+                    </button>
+
+                    <input
+                        type="file"
+                        id="fileInput"
+                        accept=".pdf"
+                        hidden
+                    >
+
+                </div>
+
+
+                <!-- Upload status -->
+
+                <div
+                    id="uploadStatus"
+                    class="upload-status"
+                ></div>
+
+
+                <!-- Documents -->
+
+                <div
+                    id="documentList"
+                    class="document-list"
+                >
+
+                    <div class="loading">
+                        Loading documents...
+                    </div>
+
+                </div>
+
+
+            </aside>
+
+
+            <!-- ============================================= -->
+            <!-- CHAT AREA -->
+            <!-- ============================================= -->
+
+            <section class="chat-section">
+
+
+                <!-- Chat header -->
+
+                <div class="chat-header">
+
+                    <div>
+
+                        <h2>
+                            💬 Chat
+                        </h2>
+
+                        <p id="selectedDocumentText">
+                            Searching all documents
+                        </p>
+
+                    </div>
+
+
+                    <!-- Document selector -->
+
+                    <select
+                        id="documentSelect"
+                        class="document-select"
+                    >
+
+                        <option value="">
+                            All documents
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- Messages -->
+
+                <div
+                    id="messages"
+                    class="messages"
+                >
+
+                    <div class="message bot">
+
+                        <div class="message-content">
+
+                            Hello! 👋
+
+                            <br><br>
+
+                            Upload a PDF and ask me
+                            questions about it.
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Input -->
+
+                <div class="input-area">
+
+                    <input
+                        id="question"
+                        type="text"
+                        placeholder="Ask something about your documents..."
+                        autocomplete="off"
+                    >
+
+                    <button
+                        id="sendButton"
+                    >
+                        Send
+                    </button>
+
+                </div>
+
+
+            </section>
+
+
+        </main>
+
 
     </div>
 
