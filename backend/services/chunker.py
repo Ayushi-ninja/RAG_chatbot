@@ -1,6 +1,7 @@
 def create_chunks(
     pages,
     source,
+    document_id,
     chunk_size=500,
     chunk_overlap=50
 ):
@@ -24,11 +25,19 @@ def create_chunks(
             if chunk_text.strip():
 
                 chunks.append({
+
                     "text": chunk_text,
+
                     "page": page["page"],
-                    "source": source
+
+                    "source": source,
+
+                    "document_id": document_id
+
                 })
 
-            start += chunk_size - chunk_overlap
+            start += (
+                chunk_size - chunk_overlap
+            )
 
     return chunks

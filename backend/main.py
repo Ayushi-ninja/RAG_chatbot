@@ -1,5 +1,7 @@
 import os
 
+from uuid import uuid4
+
 from fastapi import (
     FastAPI,
     UploadFile,
@@ -22,7 +24,9 @@ from services.chunker import (
 )
 
 from services.vector_store import (
-    store_chunks
+    store_chunks,
+    get_documents,
+    delete_document
 )
 
 from rag import ask_question
@@ -68,6 +72,8 @@ class ChatRequest(BaseModel):
 
     question: str
 
+    document_id: str | None = None
+
 
 
 @app.get("/")
@@ -95,11 +101,10 @@ def chat(
 ):
 
     try:
-
         result = ask_question(
-            request.question
+            request.question,
+            document_id=request.document_id
         )
-
         return result
 
     except Exception as error:
@@ -122,8 +127,6 @@ async def upload_document(
     file: UploadFile = File(...)
 ):
 
- 
-
     if not file.filename:
 
         raise HTTPException(
@@ -136,9 +139,13 @@ async def upload_document(
 
         raise HTTPException(
             status_code=400,
-            detail="Only PDF files are currently supported."
+            detail="Only PDF files are supported."
         )
 
+
+    document_id = str(
+        uuid4()
+    )
 
 
     file_path = os.path.join(
@@ -149,12 +156,9 @@ async def upload_document(
 
     try:
 
-       
-
         contents = await file.read()
 
 
-       
         with open(
             file_path,
             "wb"
@@ -165,8 +169,6 @@ async def upload_document(
             )
 
 
-        
-
         pages = extract_text_from_pdf(
             file_path
         )
@@ -176,15 +178,21 @@ async def upload_document(
 
             raise HTTPException(
                 status_code=400,
-                detail="Could not extract text from the PDF."
+                detail=(
+                    "Could not extract text "
+                    "from this PDF."
+                )
             )
 
 
-      
-
         chunks = create_chunks(
+
             pages,
-            source=file.filename
+
+            source=file.filename,
+
+            document_id=document_id
+
         )
 
 
@@ -192,23 +200,25 @@ async def upload_document(
 
             raise HTTPException(
                 status_code=400,
-                detail="No text chunks were created from the PDF."
+                detail=(
+                    "No text chunks were "
+                    "created from this PDF."
+                )
             )
 
-
-  
 
         chunk_count = store_chunks(
             chunks
         )
 
 
-        
-
         return {
 
             "message":
                 "Document uploaded successfully.",
+
+            "document_id":
+                document_id,
 
             "filename":
                 file.filename,
@@ -218,6 +228,7 @@ async def upload_document(
 
             "chunks":
                 chunk_count
+
         }
 
 
@@ -233,7 +244,85 @@ async def upload_document(
             error
         )
 
+
         raise HTTPException(
+
             status_code=500,
-            detail="Failed to process the PDF."
+
+            detail=(
+                "Failed to process "
+                "the PDF."
+            )
+
         )
+
+@app.get("/documents")
+def list_documents():
+
+    try:
+
+        documents = get_documents()
+
+        return {
+            "documents": documents
+        }
+
+
+    except Exception as error:
+
+        print(
+            "Document listing error:",
+            error
+        )
+
+
+        raise HTTPException(
+
+            status_code=500,
+
+            detail=(
+                "Failed to retrieve documents."
+            )
+
+        )        
+
+@app.delete("/documents/{document_id}")
+def remove_document(
+    document_id: str
+):
+
+    try:
+
+        delete_document(
+            document_id
+        )
+
+
+        return {
+
+            "message":
+                "Document deleted successfully.",
+
+            "document_id":
+                document_id
+
+        }
+
+
+    except Exception as error:
+
+        print(
+            "Delete error:",
+            error
+        )
+
+
+        raise HTTPException(
+
+            status_code=500,
+
+            detail=(
+                "Failed to delete document."
+            )
+
+        )        

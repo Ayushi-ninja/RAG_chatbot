@@ -6,6 +6,11 @@ from openai import OpenAI
 
 from dotenv import load_dotenv
 
+from services.vector_store import (
+    collection,
+    create_embeddings
+)
+
 
 load_dotenv()
 
@@ -27,23 +32,37 @@ collection = chroma_client.get_collection(
 
 def retrieve_documents(
     question,
-    n_results=3
+    n_results=3,
+    document_id=None
 ):
 
-    response = openai_client.embeddings.create(
-        model="text-embedding-3-small",
-        input=question
-    )
+    question_embedding = create_embeddings(
+        [question]
+    )[0]
 
-    question_embedding = (
-        response.data[0].embedding
-    )
+    if document_id:
 
+        results = collection.query(
 
-    results = collection.query(
+            query_embeddings=[
+                question_embedding
+            ],
+
+            n_results=n_results,
+
+            where={
+                "document_id": document_id
+            }
+        )
+
+    else:
+
+        results = collection.query(
+
         query_embeddings=[
             question_embedding
         ],
+
         n_results=n_results
     )
 
@@ -124,21 +143,42 @@ Answer clearly and concisely.
 """
 
 
-    response = openai_client.responses.create(
-        model="gpt-4.1-mini",
-        input=prompt
+    response = openrouter_client.chat.completions.create(
+
+        model="openrouter/free",
+
+        messages=[
+
+            {
+                "role": "system",
+                "content": (
+                    "You are a helpful document "
+                    "assistant. Answer only using "
+                    "the provided document context."
+                )
+            },
+
+            {
+                "role": "user",
+                "content": prompt
+            }
+
+        ]
+
     )
 
 
-    return response.output_text
+    return response.choices[0].message.content
 
-
-def ask_question(question):
+def ask_question(
+    question,
+    document_id=None
+):
 
     documents = retrieve_documents(
-        question
+        question,
+        document_id=document_id
     )
-
 
     answer = generate_answer(
         question,

@@ -32,6 +32,10 @@ EMBEDDING_MODEL = (
 # create client embedding
 def create_embeddings(texts):
 
+    if not texts:
+
+        return []
+
     print(
         f"Creating embeddings for {len(texts)} chunks..."
     )
@@ -108,6 +112,9 @@ def store_chunks(chunks):
 
         metadatas.append({
 
+            "document_id":
+                chunk["document_id"],
+
             "source":
                 chunk["source"],
 
@@ -130,8 +137,90 @@ def store_chunks(chunks):
 
 
     print(
-        f"Stored {len(chunks)} chunks in ChromaDB."
+        f"Stored {len(chunks)} chunks."
     )
 
 
     return len(chunks)
+
+
+def delete_document(document_id):
+
+    collection.delete(
+
+        where={
+            "document_id": document_id
+        }
+
+    )    
+
+def get_documents():
+
+    results = collection.get(
+        include=["metadatas"]
+    )
+
+
+    metadatas = (
+        results.get("metadatas")
+        or []
+    )
+
+
+    documents = {}
+
+
+    for metadata in metadatas:
+
+        if not metadata:
+
+            continue
+
+
+        document_id = (
+            metadata["document_id"]
+        )
+
+
+        if document_id not in documents:
+
+            documents[document_id] = {
+
+                "document_id":
+                    document_id,
+
+                "source":
+                    metadata["source"],
+
+                "pages": set()
+
+            }
+
+
+        documents[
+            document_id
+        ]["pages"].add(
+            metadata["page"]
+        )
+
+
+    result = []
+
+
+    for document in documents.values():
+
+        result.append({
+
+            "document_id":
+                document["document_id"],
+
+            "source":
+                document["source"],
+
+            "pages":
+                len(document["pages"])
+
+        })
+
+
+    return result
