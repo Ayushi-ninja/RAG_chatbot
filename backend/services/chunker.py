@@ -2,42 +2,64 @@ def create_chunks(
     pages,
     source,
     document_id,
-    chunk_size=500,
-    chunk_overlap=50
+    chunk_size=400,
+    chunk_overlap=80
 ):
 
     chunks = []
 
+
     for page in pages:
 
-        words = page["text"].split()
+        text = page["text"].strip()
+
+
+        if not text:
+            continue
+
+
+        words = text.split()
+
 
         start = 0
+
 
         while start < len(words):
 
             end = start + chunk_size
 
+
             chunk_words = words[start:end]
 
-            chunk_text = " ".join(chunk_words)
 
-            if chunk_text.strip():
+            chunk_text = " ".join(
+                chunk_words
+            ).strip()
+
+
+            if chunk_text:
 
                 chunks.append({
 
-                    "text": chunk_text,
+                    "text":
+                        chunk_text,
 
-                    "page": page["page"],
+                    "page":
+                        page["page"],
 
-                    "source": source,
+                    "source":
+                        source,
 
-                    "document_id": document_id
+                    "document_id":
+                        document_id
 
                 })
 
+
             start += (
-                chunk_size - chunk_overlap
+                chunk_size -
+                chunk_overlap
             )
+
 
     return chunks

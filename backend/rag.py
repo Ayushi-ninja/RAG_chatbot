@@ -32,7 +32,7 @@ collection = chroma_client.get_collection(
 
 def retrieve_documents(
     question,
-    n_results=3,
+    n_results=8,
     document_id=None
 ):
 
@@ -46,13 +46,19 @@ def retrieve_documents(
 
             query_embeddings=[
                 question_embedding
-            ],
+        ],
 
             n_results=n_results,
 
             where={
                 "document_id": document_id
-            }
+            },
+
+            include=[
+                "documents",
+                "metadatas",
+                "distances"
+            ]
         )
 
     else:
@@ -63,7 +69,13 @@ def retrieve_documents(
             question_embedding
         ],
 
-        n_results=n_results
+        n_results=n_results,
+
+        include=[
+                "documents",
+                "metadatas",
+                "distances"
+        ]
     )
 
 
@@ -71,19 +83,24 @@ def retrieve_documents(
 
     metadatas = results["metadatas"][0]
 
+    distances = results["distances"][0]
+
 
     retrieved = []
 
 
     for document, metadata in zip(
         documents,
-        metadatas
+        metadatas,
+        distances
     ):
 
         retrieved.append({
             "text": document,
             "source": metadata["source"],
-            "page": metadata["page"]
+            "page": metadata["page"],
+            "document_id": metadata["document_id"],
+            "distance": metadata["distance"]
         })
 
 
@@ -117,17 +134,30 @@ Content:
 
 
     prompt = f"""
-You are a helpful document assistant.
+You are a document question-answering assistant.
 
-Answer the user's question using ONLY
-the information contained in the provided
-document context.
+Your job is to answer the user's question
+using ONLY the information provided in the
+DOCUMENT CONTEXT.
 
-If the answer cannot be found in the
-provided context, say:
+IMPORTANT RULES:
+
+1. Do not use outside knowledge.
+
+2. Do not invent or guess information.
+
+3. If the answer is not supported by the
+   document context, say exactly:
 
 "I don't know based on the provided documents."
 
+4. When possible, mention the relevant source
+   and page.
+
+5. Give a concise and direct answer.
+
+6. If multiple parts of the context are relevant,
+   combine them carefully.
 
 DOCUMENT CONTEXT:
 
@@ -139,7 +169,7 @@ USER QUESTION:
 {question}
 
 
-Answer clearly and concisely.
+ANSWER:
 """
 
 
@@ -193,11 +223,18 @@ def ask_question(
 
         sources.append({
             "source": document["source"],
-            "page": document["page"]
+            "page": document["page"],
+            "distance": document["distance"]
         })
 
 
     return {
-        "answer": answer,
-        "sources": sources
+        "answer": "...",
+        "sources": [
+            {
+                "source": "resume.pdf",
+                "page": 2,
+                "distance": 0.31
+            }
+        ]
     }
